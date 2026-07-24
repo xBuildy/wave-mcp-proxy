@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "wave-os": {
+      "command": "node",
+      "args": ["C:/Users/Eddie/wave-mcp-proxy/dist/index.js"],
+      "env": {
+        "MCP_BACKEND_URL": "https://insta-fi-ai-1e5bea1c.base44.app/api/apps/6a5abc9bfa61c917463b71cd/functions/mcpRouter"
+      }
+    }
+  }
+}
