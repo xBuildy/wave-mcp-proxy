@@ -1,627 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wave OS Portal</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  
-  body {
-    background: #0a0a14;
-    color: #f0f0f5;
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-    height: 100vh;
-    overflow: hidden;
-  }
-  
-  .portal {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    padding: 16px;
-    gap: 12px;
-  }
-  
-  /* ── Header ── */
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 4px 0;
-  }
-  
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .logo {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-  }
-  
-  .header-title {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-  }
-  
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #10b981;
-    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
-  }
-  
-  .status-dot.disconnected {
-    background: #ef4444;
-    box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
-  }
-  
-  /* ── Open Wave OS Button ── */
-  .open-wave-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: transparent;
-    border: 1px solid rgba(0, 229, 192, 0.3);
-    border-radius: 8px;
-    color: #00e5c0;
-    font-size: 11px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-  }
-  
-  .open-wave-btn:hover {
-    background: rgba(0, 229, 192, 0.1);
-    border-color: rgba(0, 229, 192, 0.5);
-  }
-  
-  .open-wave-btn svg {
-    width: 12px;
-    height: 12px;
-  }
-  
-  /* ── Auth View ── */
-  .auth-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-  }
-  
-  .auth-logo {
-    width: 64px;
-    height: 64px;
-    border-radius: 14px;
-  }
-  
-  .auth-tagline {
-    font-size: 13px;
-    color: rgba(240, 240, 245, 0.5);
-    text-align: center;
-    max-width: 240px;
-    line-height: 1.5;
-  }
-  
-  .auth-tagline strong {
-    color: #f0f0f5;
-    font-weight: 600;
-  }
-  
-  .auth-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 280px;
-  }
-  
-  .btn-primary {
-    padding: 12px 16px;
-    background: #00e5c0;
-    color: #0a0a14;
-    border: none;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-  }
-  
-  .btn-primary:hover {
-    background: #00e5c0;
-    box-shadow: 0 0 20px rgba(0, 229, 192, 0.3);
-  }
-  
-  .btn-ghost {
-    padding: 12px 16px;
-    background: transparent;
-    color: rgba(240, 240, 245, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-  }
-  
-  .btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.12);
-    color: #f0f0f5;
-  }
-  
-  /* ── Dashboard View ── */
-  .dashboard-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    overflow: hidden;
-  }
-  
-  /* ── Credit Cards ── */
-  .credit-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
-    padding: 16px;
-    transition: all 0.2s;
-  }
-  
-  .credit-card:hover {
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  .card-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: rgba(240, 240, 245, 0.4);
-    margin-bottom: 8px;
-  }
-  
-  .card-balance {
-    font-size: 28px;
-    font-weight: 700;
-    font-family: 'SF Mono', 'Consolas', monospace;
-    color: #f0f0f5;
-    line-height: 1;
-  }
-  
-  .card-sublabel {
-    font-size: 11px;
-    color: rgba(240, 240, 245, 0.35);
-    margin-top: 6px;
-  }
-  
-  .card-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .plan-badge {
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  
-  .plan-badge.free {
-    background: rgba(0, 229, 192, 0.15);
-    color: #00e5c0;
-  }
-  
-  .plan-badge.pro {
-    background: rgba(155, 77, 255, 0.15);
-    color: #9b4dff;
-  }
-  
-  .plan-badge.none {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(240, 240, 245, 0.4);
-  }
-  
-  .buy-btn {
-    padding: 6px 14px;
-    background: rgba(0, 229, 192, 0.15);
-    border: 1px solid rgba(0, 229, 192, 0.3);
-    border-radius: 8px;
-    color: #00e5c0;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .buy-btn:hover {
-    background: rgba(0, 229, 192, 0.25);
-  }
-  
-  /* ── Upsell Card (Tier 1 → Tier 2) ── */
-  .upsell-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
-    padding: 16px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .upsell-card:hover {
-    border-color: rgba(0, 229, 192, 0.2);
-    background: rgba(0, 229, 192, 0.03);
-  }
-  
-  .upsell-cta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .upsell-text {
-    font-size: 13px;
-    font-weight: 600;
-    color: #00e5c0;
-  }
-  
-  .upsell-arrow {
-    font-size: 16px;
-    color: #00e5c0;
-  }
-  
-  .upsell-bonus {
-    font-size: 11px;
-    color: rgba(240, 240, 245, 0.4);
-    margin-top: 4px;
-  }
-  
-  /* ── Activity Feed ── */
-  .activity-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-height: 0;
-  }
-  
-  .activity-header {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: rgba(240, 240, 245, 0.4);
-    padding: 4px 0;
-  }
-  
-  .activity-feed {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  
-  .activity-feed::-webkit-scrollbar {
-    width: 4px;
-  }
-  
-  .activity-feed::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  .activity-feed::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-  }
-  
-  .activity-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    font-size: 12px;
-  }
-  
-  .activity-icon {
-    font-size: 14px;
-    flex-shrink: 0;
-  }
-  
-  .activity-desc {
-    flex: 1;
-    color: rgba(240, 240, 245, 0.7);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .activity-credit {
-    font-size: 10px;
-    color: rgba(240, 240, 245, 0.35);
-    flex-shrink: 0;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.04);
-  }
-  
-  .activity-credit.compute {
-    color: #9b4dff;
-    background: rgba(155, 77, 255, 0.08);
-  }
-  
-  .activity-credit.base44 {
-    color: #00e5c0;
-    background: rgba(0, 229, 192, 0.08);
-  }
-  
-  .activity-time {
-    font-size: 10px;
-    color: rgba(240, 240, 245, 0.25);
-    flex-shrink: 0;
-  }
-  
-  /* ── Status Bar ── */
-  .status-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
-    font-size: 11px;
-    color: rgba(240, 240, 245, 0.35);
-  }
-  
-  .status-bar .tools-active {
-    color: #00e5c0;
-  }
-  
-  /* ── Loading ── */
-  .loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    color: rgba(240, 240, 245, 0.3);
-    font-size: 12px;
-  }
-  
-  /* ── Pulse animation for low credits ── */
-  @keyframes pulse-teal {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(0, 229, 192, 0); }
-    50% { box-shadow: 0 0 0 4px rgba(0, 229, 192, 0.15); }
-  }
-  
-  .pulse {
-    animation: pulse-teal 2s infinite;
-  }
-  
-  /* ── Responsive ── */
-  @media (max-width: 300px) {
-    .portal { padding: 12px; }
-    .card-balance { font-size: 24px; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wave OS — Compute Dashboard</title>
+  <style>
+    :root {
+      --bg: #0a0a14;
+      --surface: rgba(255, 255, 255, 0.03);
+      --surface-hover: rgba(255, 255, 255, 0.06);
+      --border: rgba(255, 255, 255, 0.08);
+      --teal: #00e5c0;
+      --purple: #9b4dff;
+      --text: rgba(255, 255, 255, 0.92);
+      --text-muted: rgba(255, 255, 255, 0.48);
+      --radius: 14px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 13px;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .container { max-width: 360px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+    /* Header */
+    .header { display: flex; align-items: center; justify-content: space-between; }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .logo { width: 28px; height: 28px; border-radius: 7px; }
+    .header-title { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+    .header-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--teal); box-shadow: 0 0 8px var(--teal);
+      transition: all 0.3s;
+    }
+    .status-dot.disconnected { background: #ff5a5a; box-shadow: 0 0 8px #ff5a5a; }
+
+    /* Companion badge */
+    .companion-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(0, 229, 192, 0.1); border: 1px solid rgba(0, 229, 192, 0.2);
+      border-radius: 8px; padding: 6px 12px; font-size: 11px; color: var(--teal);
+    }
+    .companion-badge svg { width: 14px; height: 14px; }
+
+    /* Cards */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px;
+      transition: background 0.2s;
+    }
+    .card:hover { background: var(--surface-hover); }
+    .card-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .card-row { display: flex; align-items: center; justify-content: space-between; }
+    .card-balance { font-size: 28px; font-weight: 700; letter-spacing: -1px; }
+    .card-sublabel { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Plan badge */
+    .plan-badge {
+      font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px;
+      text-transform: capitalize;
+    }
+    .plan-badge.free { background: rgba(255, 255, 255, 0.08); color: var(--text-muted); }
+    .plan-badge.pro { background: rgba(0, 229, 192, 0.15); color: var(--teal); }
+    .plan-badge.team { background: rgba(155, 77, 255, 0.15); color: var(--purple); }
+
+    /* Upsell */
+    .upsell-card {
+      background: linear-gradient(135deg, rgba(0, 229, 192, 0.06), rgba(155, 77, 255, 0.06));
+      border: 1px solid rgba(0, 229, 192, 0.15);
+      border-radius: var(--radius); padding: 16px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .upsell-card:hover { border-color: rgba(0, 229, 192, 0.3); background: linear-gradient(135deg, rgba(0, 229, 192, 0.1), rgba(155, 77, 255, 0.1)); }
+    .upsell-cta { display: flex; align-items: center; justify-content: space-between; }
+    .upsell-text { font-size: 14px; font-weight: 600; color: var(--teal); }
+    .upsell-arrow { font-size: 18px; color: var(--teal); }
+    .upsell-bonus { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+    /* Activity */
+    .activity-section { display: flex; flex-direction: column; gap: 8px; }
+    .activity-header { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .activity-feed { display: flex; flex-direction: column; gap: 4px; }
+    .activity-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; border-radius: 8px;
+      background: var(--surface);
+      transition: background 0.15s;
+    }
+    .activity-item:hover { background: var(--surface-hover); }
+    .activity-icon { font-size: 14px; width: 20px; text-align: center; }
+    .activity-desc { flex: 1; font-size: 12px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .activity-credit { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+    .activity-credit.compute { background: rgba(0, 229, 192, 0.12); color: var(--teal); }
+    .activity-time { font-size: 10px; color: var(--text-muted); min-width: 24px; text-align: right; }
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--teal); color: #0a0a14; border: none;
+      border-radius: 10px; padding: 10px 20px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-ghost {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+      border-radius: 10px; padding: 10px 20px; font-size: 13px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+    .buy-btn {
+      background: rgba(0, 229, 192, 0.12); border: 1px solid rgba(0, 229, 192, 0.2);
+      color: var(--teal); border-radius: 8px; padding: 4px 12px; font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .buy-btn:hover { background: rgba(0, 229, 192, 0.2); }
+
+    /* Open Wave OS link */
+    .open-wave {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 10px; border-radius: 10px; text-decoration: none;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); font-size: 12px; transition: all 0.2s;
+    }
+    .open-wave:hover { border-color: var(--teal); color: var(--teal); }
+    .open-wave svg { width: 14px; height: 14px; }
+
+    /* Status bar */
+    .status-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; border-radius: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      font-size: 11px; color: var(--text-muted);
+    }
+    .tools-active { color: var(--teal); font-weight: 600; }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 90, 90, 0.3); } 50% { box-shadow: 0 0 0 6px rgba(255, 90, 90, 0); } }
+  </style>
 </head>
 <body>
-
-<div class="portal" id="portal">
-  <!-- Header (always visible) -->
+<div class="container">
+  <!-- Header -->
   <div class="header">
     <div class="header-left">
       <img src="https://media.base44.com/images/public/69fd12da185a6e091e5bea1c/0cb0a2de3_WaveOSLogo.png" alt="Wave OS" class="logo">
-      <span class="header-title">Wave OS</span>
-      <div class="status-dot" id="statusDot"></div>
+      <div>
+        <div class="header-title">Wave OS</div>
+        <div class="header-sub">Compute for Cursor</div>
+      </div>
     </div>
-    <a href="https://oswave.io" target="_blank" class="open-wave-btn" id="openWaveBtn" style="display:none;">
-      Open Wave OS
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-        <polyline points="15 3 21 3 21 9"/>
-        <line x1="10" y1="14" x2="21" y2="3"/>
-      </svg>
-    </a>
+    <div class="status-dot" id="statusDot"></div>
   </div>
 
-  <!-- Auth View (logged out) -->
-  <div class="auth-view" id="authView">
-    <img src="https://media.base44.com/images/public/69fd12da185a6e091e5bea1c/0cb0a2de3_WaveOSLogo.png" alt="Wave OS" class="auth-logo">
-    <div class="auth-tagline">
-      <strong>Base44 backend</strong> + <strong>GPU compute</strong> for Cursor
-    </div>
-    <div class="auth-buttons">
-      <button class="btn-primary" onclick="connectBase44()">Connect to Base44</button>
-      <button class="btn-ghost" onclick="enableCompute()">Enable GPU Compute</button>
-    </div>
+  <!-- Companion badge -->
+  <div class="companion-badge">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+    <span>Companion to Base44 MCP</span>
   </div>
 
-  <!-- Dashboard View (logged in) -->
-  <div class="dashboard-view" id="dashboardView" style="display:none;">
-    <!-- Base44 Credits Card (always visible) -->
-    <div class="credit-card">
-      <div class="card-label">Base44 Credits</div>
+  <!-- Wave OS Compute Card -->
+  <div id="computeCard">
+    <!-- Connected: User has Wave OS account -->
+    <div class="card" id="computeActive" style="display:none;">
+      <div class="card-label">Wave OS Compute</div>
       <div class="card-row">
-        <div class="card-balance" id="b44Balance">4,692</div>
-        <div class="card-sublabel">Integration</div>
+        <div class="card-balance" id="computeBalance">0</div>
+        <span class="plan-badge free" id="planBadge">Free</span>
       </div>
-      <div class="card-sublabel">Backend operations · Entity CRUD · Functions</div>
-    </div>
-
-    <!-- Wave OS Compute Card -->
-    <div id="computeCard">
-      <!-- Tier 2: User has Wave OS account -->
-      <div class="credit-card" id="computeActive" style="display:none;">
-        <div class="card-label">Wave OS Compute</div>
-        <div class="card-row">
-          <div class="card-balance" id="computeBalance">1,247</div>
-          <span class="plan-badge free" id="planBadge">Free</span>
-        </div>
-        <div class="card-row" style="margin-top: 10px;">
-          <span class="card-sublabel">GPU + AI compute · <span id="usedThisPeriod">312</span> used this period</span>
-          <button class="buy-btn" onclick="buyCredits()">Buy Credits</button>
-        </div>
-      </div>
-
-      <!-- Tier 1: Upsell CTA -->
-      <div class="upsell-card" id="computeUpsell">
-        <div class="upsell-cta">
-          <span class="upsell-text">Enable GPU Compute</span>
-          <span class="upsell-arrow">→</span>
-        </div>
-        <div class="upsell-bonus">100 free credits on signup · Theta EdgeCloud GPU</div>
+      <div class="card-row" style="margin-top: 10px;">
+        <span class="card-sublabel">GPU + AI compute · <span id="usedThisPeriod">0</span> used this period</span>
+        <button class="buy-btn" onclick="buyCredits()">Buy Credits</button>
       </div>
     </div>
 
-    <!-- Activity Feed -->
-    <div class="activity-section">
-      <div class="activity-header">Recent Activity</div>
-      <div class="activity-feed" id="activityFeed">
-        <div class="activity-item">
-          <span class="activity-icon">📊</span>
-          <span class="activity-desc">Created record in User entity</span>
-          <span class="activity-credit base44">Base44</span>
-          <span class="activity-time">2m</span>
-        </div>
-        <div class="activity-item">
-          <span class="activity-icon">🎨</span>
-          <span class="activity-desc">Image generated: "dark dashboard"</span>
-          <span class="activity-credit compute">4 cr</span>
-          <span class="activity-time">10m</span>
-        </div>
-        <div class="activity-item">
-          <span class="activity-icon">🚀</span>
-          <span class="activity-desc">Function deployed: getWeather</span>
-          <span class="activity-credit base44">Base44</span>
-          <span class="activity-time">15m</span>
-        </div>
-        <div class="activity-item">
-          <span class="activity-icon">⚡</span>
-          <span class="activity-desc">GPU instance started (sd-xl)</span>
-          <span class="activity-credit compute">1 cr</span>
-          <span class="activity-time">1h</span>
-        </div>
-        <div class="activity-item">
-          <span class="activity-icon">🎬</span>
-          <span class="activity-desc">Video generated: "product demo"</span>
-          <span class="activity-credit compute">20 cr</span>
-          <span class="activity-time">2h</span>
-        </div>
+    <!-- Not connected: Upsell CTA -->
+    <div class="upsell-card" id="computeUpsell" onclick="enableCompute()">
+      <div class="upsell-cta">
+        <span class="upsell-text">Enable GPU Compute</span>
+        <span class="upsell-arrow">→</span>
+      </div>
+      <div class="upsell-bonus">100 free credits on signup · Theta EdgeCloud GPU · AI inference</div>
+    </div>
+  </div>
+
+  <!-- Activity Feed -->
+  <div class="activity-section">
+    <div class="activity-header">Recent Compute Activity</div>
+    <div class="activity-feed" id="activityFeed">
+      <div class="activity-item">
+        <span class="activity-icon">🎨</span>
+        <span class="activity-desc">Image generated: "dark dashboard"</span>
+        <span class="activity-credit compute">4 cr</span>
+        <span class="activity-time">10m</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon">⚡</span>
+        <span class="activity-desc">GPU instance started (sd-xl)</span>
+        <span class="activity-credit compute">1 cr</span>
+        <span class="activity-time">1h</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon">🎬</span>
+        <span class="activity-desc">Video generated: "product demo"</span>
+        <span class="activity-credit compute">20 cr</span>
+        <span class="activity-time">2h</span>
       </div>
     </div>
   </div>
 
-  <!-- Status Bar (always visible) -->
+  <!-- Open Wave OS -->
+  <a href="https://oswave.io" target="_blank" class="open-wave" id="openWaveBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6M10 14L21 3"/></svg>
+    <span>Open Wave OS</span>
+  </a>
+
+  <!-- Status Bar -->
   <div class="status-bar">
-    <span><span class="tools-active" id="toolCount">16</span> tools active</span>
-    <span id="tierStatus">Tier 1 — Base44</span>
+    <span><span class="tools-active" id="toolCount">10</span> compute tools active</span>
+    <span id="tierStatus">Wave OS Compute</span>
   </div>
 </div>
 
 <script>
-  // ── State ──
   let state = {
-    authenticated: false,
-    tier: 1, // 1 = Base44 only, 2 = Wave OS enabled
-    b44Credits: 4692,
+    connected: false,
     computeCredits: 0,
     plan: 'none',
-    usedThisPeriod: 0,
-    activities: []
+    usedThisPeriod: 0
   };
 
-  // ── Config (set by npx installer) ──
-  const MCP_BACKEND_URL = '{{MCP_BACKEND_URL}}'; // replaced at install time
+  const MCP_BACKEND_URL = '{{MCP_BACKEND_URL}}';
   const WAVE_AUTH_TOKEN = localStorage.getItem('wave_auth_token') || '';
 
-  // ── Init ──
   function init() {
     if (WAVE_AUTH_TOKEN) {
-      state.authenticated = true;
-      showDashboard();
+      state.connected = true;
       fetchCredits();
-    } else {
-      showAuth();
     }
-  }
-
-  // ── View Toggle ──
-  function showAuth() {
-    document.getElementById('authView').style.display = 'flex';
-    document.getElementById('dashboardView').style.display = 'none';
-    document.getElementById('openWaveBtn').style.display = 'none';
-    document.getElementById('statusDot').classList.add('disconnected');
-    document.getElementById('tierStatus').textContent = 'Not connected';
-  }
-
-  function showDashboard() {
-    document.getElementById('authView').style.display = 'none';
-    document.getElementById('dashboardView').style.display = 'flex';
-    document.getElementById('openWaveBtn').style.display = 'flex';
-    document.getElementById('statusDot').classList.remove('disconnected');
     updateDashboard();
   }
 
-  // ── Auth Actions ──
-  function connectBase44() {
-    // In production: opens Base44 OAuth flow
-    window.open('https://oswave.io/auth?ref=cursor', '_blank');
-    // For demo: simulate auth
-    setTimeout(() => {
-      localStorage.setItem('wave_auth_token', 'demo_token_' + Date.now());
-      state.authenticated = true;
-      showDashboard();
-      fetchCredits();
-    }, 1500);
-  }
-
-  function enableCompute() {
-    window.open('https://oswave.io/signup?ref=cursor&plan=free', '_blank');
-    // For demo: simulate tier upgrade
-    setTimeout(() => {
-      state.tier = 2;
-      state.computeCredits = 100;
-      state.plan = 'free';
-      updateDashboard();
-    }, 2000);
-  }
-
-  // ── Credit Fetching ──
   async function fetchCredits() {
     try {
-      // Call mcpRouter's theta_get_credits tool
       const resp = await fetch(MCP_BACKEND_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + WAVE_AUTH_TOKEN
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + WAVE_AUTH_TOKEN },
         body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'tools/call',
+          jsonrpc: '2.0', id: 1, method: 'tools/call',
           params: { name: 'theta_get_credits', arguments: {} }
         })
       });
-
       if (resp.ok) {
         const data = await resp.json();
         const content = JSON.parse(data.result?.content?.[0]?.text || '{}');
@@ -629,175 +262,74 @@
           state.computeCredits = content.credits_balance;
           state.plan = content.plan || 'free';
           state.usedThisPeriod = content.credits_used_this_period || 0;
-          state.tier = state.plan === 'none' ? 1 : 2;
+          state.connected = true;
         }
       }
-    } catch (e) {
-      // Fallback to demo values
-    }
+    } catch (e) { /* offline — show demo values */ }
     updateDashboard();
   }
 
-  // ── Dashboard Update ──
   function updateDashboard() {
-    document.getElementById('b44Balance').textContent = state.b44Credits.toLocaleString();
-
-    if (state.tier === 2) {
+    if (state.connected) {
       document.getElementById('computeActive').style.display = 'block';
       document.getElementById('computeUpsell').style.display = 'none';
       document.getElementById('computeBalance').textContent = state.computeCredits.toLocaleString();
       document.getElementById('planBadge').textContent = state.plan.charAt(0).toUpperCase() + state.plan.slice(1);
       document.getElementById('planBadge').className = 'plan-badge ' + state.plan;
       document.getElementById('usedThisPeriod').textContent = state.usedThisPeriod.toLocaleString();
-      document.getElementById('tierStatus').textContent = 'Tier 2 — GPU enabled';
-      document.getElementById('toolCount').textContent = '16';
-
-      // Pulse if low credits
+      document.getElementById('tierStatus').textContent = 'GPU enabled';
+      document.getElementById('toolCount').textContent = '10';
+      document.getElementById('statusDot').classList.remove('disconnected');
       if (state.computeCredits < 20) {
         document.getElementById('computeActive').classList.add('pulse');
       }
     } else {
       document.getElementById('computeActive').style.display = 'none';
       document.getElementById('computeUpsell').style.display = 'block';
-      document.getElementById('tierStatus').textContent = 'Tier 1 — Base44';
-      document.getElementById('toolCount').textContent = '8';
+      document.getElementById('tierStatus').textContent = 'Not connected';
+      document.getElementById('toolCount').textContent = '0';
+      document.getElementById('statusDot').classList.add('disconnected');
     }
   }
 
-  // ── Buy Credits ──
+  function enableCompute() {
+    window.open('https://oswave.io/signup?ref=cursor&plan=free', '_blank');
+    setTimeout(() => {
+      state.connected = true;
+      state.computeCredits = 100;
+      state.plan = 'free';
+      updateDashboard();
+    }, 2000);
+  }
+
   function buyCredits() {
     window.open('https://oswave.io/wallet?ref=cursor&buy=credits', '_blank');
   }
 
-  // ── Activity Feed Update (called by proxy on MCP responses) ──
-  window.addActivity = function(tool, description, creditType, creditCost) {
+  window.addActivity = function(tool, description, creditCost) {
     const feed = document.getElementById('activityFeed');
     const item = document.createElement('div');
     item.className = 'activity-item';
-
     const icons = {
-      'b44_entity_create': '📊',
-      'b44_entity_list': '📊',
-      'b44_deploy_function': '🚀',
       'theta_generate_image': '🎨',
       'theta_generate_video': '🎬',
-      'theta_compute_start': '⚡',
-      'theta_ai_chat': '💬',
+      'theta_start_session': '⚡',
+      'theta_run_inference': '🧠',
+      'b44_deploy_function': '🚀',
+      'b44_entity_create': '📊',
       'error': '❌'
     };
-
-    const icon = icons[tool] || '⚡';
-    const creditClass = creditType === 'compute' ? 'compute' : 'base44';
-    const creditLabel = creditType === 'compute' ? creditCost + ' cr' : 'Base44';
-    const time = 'now';
-
-    item.innerHTML = `
-      <span class="activity-icon">${icon}</span>
-      <span class="activity-desc">${description}</span>
-      <span class="activity-credit ${creditClass}">${creditLabel}</span>
-      <span class="activity-time">${time}</span>
-    `;
-
+    item.innerHTML = '<span class="activity-icon">' + (icons[tool] || '⚡') + '</span>' +
+      '<span class="activity-desc">' + description + '</span>' +
+      '<span class="activity-credit compute">' + (creditCost || 0) + ' cr</span>' +
+      '<span class="activity-time">now</span>';
     feed.insertBefore(item, feed.firstChild);
-
-    // Update timestamps
-    updateTimestamps();
-
-    // Keep max 50 items
-    while (feed.children.length > 50) {
-      feed.removeChild(feed.lastChild);
-    }
-
-    // Refresh credits after activity
+    while (feed.children.length > 50) { feed.removeChild(feed.lastChild); }
     fetchCredits();
   };
 
-  function updateTimestamps() {
-    // Simplified: just labels everything relative
-    const items = document.querySelectorAll('.activity-item');
-    items.forEach((item, i) => {
-      const timeEl = item.querySelector('.activity-time');
-      if (i === 0) timeEl.textContent = 'now';
-      else if (i === 1) timeEl.textContent = '1m';
-      else if (i < 5) timeEl.textContent = (i * 5) + 'm';
-      else timeEl.textContent = (i * 10) + 'm';
-    });
-  }
-
-  // ── Start ──
+  setInterval(() => { if (state.connected) { fetchCredits(); } }, 10000);
   init();
-
-  // ── WebSocket for real-time activity feed ──
-  const wsPort = window.location.port || 4400;
-  const ws = new WebSocket('ws://localhost:' + wsPort + '/ws');
-
-  ws.onmessage = (event) => {
-    const msg = JSON.parse(event.data);
-    if (msg.type === 'activities') {
-      // Full activity list on connect
-      renderActivities(msg.activities);
-    } else if (msg.type === 'activity') {
-      // New activity pushed in real-time
-      addActivityItem(msg.activity);
-    }
-  };
-
-  ws.onopen = () => {
-    console.log('[WavePortal] WebSocket connected');
-  };
-
-  ws.onclose = () => {
-    console.log('[WavePortal] WebSocket disconnected — retrying in 3s');
-    setTimeout(() => location.reload(), 3000);
-  };
-
-  function renderActivities(items) {
-    const feed = document.getElementById('activityFeed');
-    feed.innerHTML = '';
-    items.slice(0, 50).forEach(item => addActivityItem(item));
-  }
-
-  function addActivityItem(activity) {
-    const feed = document.getElementById('activityFeed');
-    const item = document.createElement('div');
-    item.className = 'activity-item';
-
-    const creditClass = activity.creditType === 'compute' ? 'compute' : 'base44';
-    const creditLabel = activity.creditType === 'compute'
-      ? (activity.creditCost > 0 ? activity.creditCost + ' cr' : 'compute')
-      : 'Base44';
-
-    const time = formatTime(activity.timestamp);
-
-    item.innerHTML = `
-      <span class="activity-icon">${activity.icon}</span>
-      <span class="activity-desc">${activity.description}</span>
-      <span class="activity-credit ${creditClass}">${creditLabel}</span>
-      <span class="activity-time">${time}</span>
-    `;
-
-    feed.insertBefore(item, feed.firstChild);
-    while (feed.children.length > 50) {
-      feed.removeChild(feed.lastChild);
-    }
-  }
-
-  function formatTime(timestamp) {
-    if (!timestamp) return 'now';
-    const diff = Date.now() - new Date(timestamp).getTime();
-    if (diff < 60000) return 'now';
-    if (diff < 3600000) return Math.floor(diff / 60000) + 'm';
-    if (diff < 86400000) return Math.floor(diff / 3600000) + 'h';
-    return Math.floor(diff / 86400000) + 'd';
-  }
-
-  // ── Poll credits every 10s when authenticated ──
-  setInterval(() => {
-    if (state.authenticated) {
-      fetchCredits();
-    }
-  }, 10000);
 </script>
-
 </body>
 </html>
