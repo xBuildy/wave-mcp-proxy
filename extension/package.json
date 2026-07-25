@@ -2,7 +2,7 @@
   "name": "wave-os-portal",
   "displayName": "Wave OS Portal",
   "publisher": "xbuildy",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -11,6 +11,13 @@
     "onStartupFinished"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "wave-os.openDesktop",
+        "title": "Open Wave OS",
+        "category": "Wave OS"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
