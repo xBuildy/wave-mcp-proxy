@@ -1,10 +1,14 @@
 {
   "mcpServers": {
+    "base44": {
+      "type": "http",
+      "url": "https://app.base44.com/mcp"
+    },
     "wave-os": {
       "command": "node",
-      "args": ["C:/Users/Eddie/wave-mcp-proxy/dist/index.js"],
+      "args": ["./proxy-v3.js"],
       "env": {
-        "MCP_BACKEND_URL": "https://oswave.io/api/apps/6a5abc9bfa61c917463b71cd/functions/mcpRouter"
+        "MCP_BACKEND_URL": "https://oswave.io/functions/mcpRouter"
       }
     }
   }

@@ -1,18 +1,19 @@
 /**
- * Wave OS MCP Proxy v3 — Pure MCP Forwarder
+ * Wave OS MCP Proxy v3 — Companion MCP Forwarder
  *
- * Single responsibility: Forward Cursor's JSON-RPC MCP calls to the cloud mcpRouter.
- * The portal UI lives in the VS Code sidebar extension (wave-os-portal).
+ * Designed to run alongside Base44's official MCP (https://app.base44.com/mcp).
  *
- * Usage in .cursor/mcp.json:
+ * Base44 MCP handles: app creation, app editing, schema listing, entity queries.
+ * Wave OS MCP handles: entity CRUD, function deployment, Theta GPU compute.
+ *
+ * Together in .cursor/mcp.json:
  * {
  *   "mcpServers": {
+ *     "base44": { "type": "http", "url": "https://app.base44.com/mcp" },
  *     "wave-os": {
  *       "command": "node",
- *       "args": ["C:\\Users\\Eddie\\wave-mcp-proxy\\proxy-v3.js"],
- *       "env": {
- *         "MCP_BACKEND_URL": "https://oswave.io/functions/mcpRouter"
- *       }
+ *       "args": ["./proxy-v3.js"],
+ *       "env": { "MCP_BACKEND_URL": "https://oswave.io/functions/mcpRouter" }
  *     }
  *   }
  * }
@@ -28,14 +29,12 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
-// ── Config ──
 const MCP_BACKEND_URL = process.env.MCP_BACKEND_URL || "https://oswave.io/functions/mcpRouter";
 const AUTH_TOKEN = process.env.WAVE_AUTH_TOKEN || "";
 
-console.error("[Wave MCP Proxy v3] Starting...");
-console.error("[Wave MCP Proxy v3] Backend: " + MCP_BACKEND_URL);
+console.error("[Wave MCP v3] Companion mode — pair with base44 MCP");
+console.error("[Wave MCP v3] Backend: " + MCP_BACKEND_URL);
 
-// ── Forward JSON-RPC to cloud mcpRouter ──
 async function forwardToRouter(payload) {
   const headers = {
     "Content-Type": "application/json",
@@ -59,13 +58,11 @@ async function forwardToRouter(payload) {
   return resp.json();
 }
 
-// ── MCP Server (stdio transport for Cursor) ──
 const server = new Server(
   { name: "wave-os-mcp", version: "3.0.0" },
   { capabilities: { tools: {} } }
 );
 
-// List tools — fetch from cloud router
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   try {
     const result = await forwardToRouter({
@@ -76,12 +73,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     });
     return result.result || { tools: [] };
   } catch (err) {
-    console.error("[Wave MCP Proxy v3] ListTools error: " + err.message);
+    console.error("[Wave MCP v3] ListTools error: " + err.message);
     return { tools: [] };
   }
 });
 
-// Call tool — forward to cloud router
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     const result = await forwardToRouter({
@@ -92,7 +88,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     });
     return result.result || { content: [{ type: "text", text: "No response from router" }] };
   } catch (err) {
-    console.error("[Wave MCP Proxy v3] CallTool error: " + err.message);
+    console.error("[Wave MCP v3] CallTool error: " + err.message);
     return {
       content: [{ type: "text", text: "Error: " + err.message }],
       isError: true,
@@ -100,7 +96,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
-// ── Start ──
 const transport = new StdioServerTransport();
 await server.connect(transport);
-console.error("[Wave MCP Proxy v3] Connected to Cursor via stdio");
+console.error("[Wave MCP v3] Connected to Cursor via stdio");
