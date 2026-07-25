@@ -170,19 +170,8 @@ const httpServer = createServer((req, res) => {
   res.end("Not found. Open http://localhost:" + PORTAL_PORT + " for the Wave OS Portal.");
 });
 
-// ── WebSocket for real-time activity feed ──
-const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
-
-wss.on("connection", (ws) => {
-  portalClients.add(ws);
-  
-  // Send current activities on connect
-  ws.send(JSON.stringify({ type: "activities", activities }));
-  
-  ws.on("close", () => {
-    portalClients.delete(ws);
-  });
-});
+// ── WebSocket for real-time activity feed (lazy — only after HTTP server binds) ──
+let wss = null;
 
 function broadcastToPortals(activity) {
   const msg = JSON.stringify({ type: "activity", activity });
@@ -193,18 +182,43 @@ function broadcastToPortals(activity) {
   }
 }
 
-// Start portal server — gracefully skip if port is already in use
-httpServer.on("error", (err) => {
-  if (err.code === "EADDRINUSE") {
-    console.error("[Wave Portal] Port " + PORTAL_PORT + " already in use — portal disabled, MCP still active");
-  } else {
-    console.error("[Wave Portal] Server error:", err.message);
-  }
-});
-httpServer.listen(PORTAL_PORT, "127.0.0.1", () => {
-  console.error("[Wave Portal] Serving at http://localhost:" + PORTAL_PORT);
-  console.error("[Wave Portal] WebSocket at ws://localhost:" + PORTAL_PORT + "/ws");
-});
+function startPortalServer() {
+  // Catch EADDRINUSE before attempting to listen
+  httpServer.on("error", (err) => {
+    if (err["code"] === "EADDRINUSE") {
+      console.error("[Wave Portal] Port " + PORTAL_PORT + " busy — portal skipped, MCP stdio active");
+      // Do NOT throw — MCP stdio will still work
+    } else {
+      console.error("[Wave Portal] HTTP error: " + err["message"]);
+    }
+  });
+
+  httpServer.listen(PORTAL_PORT, "127.0.0.1", () => {
+    console.error("[Wave Portal] Serving at http://localhost:" + PORTAL_PORT);
+
+    // Only create WebSocketServer AFTER httpServer is bound successfully
+    try {
+      wss = new WebSocketServer({ server: httpServer, path: "/ws" });
+
+      wss.on("error", (err) => {
+        console.error("[Wave Portal] WS error: " + err["message"]);
+      });
+
+      wss.on("connection", (ws) => {
+        portalClients.add(ws);
+        ws.send(JSON["stringify"]({ type: "activities", activities }));
+        ws.on("close", () => { portalClients.delete(ws); });
+        ws.on("error", () => { portalClients.delete(ws); });
+      });
+
+      console.error("[Wave Portal] WebSocket at ws://localhost:" + PORTAL_PORT + "/ws");
+    } catch (wsErr) {
+      console.error("[Wave Portal] WS init failed: " + wsErr["message"]);
+    }
+  });
+}
+
+startPortalServer();
 
 // ── MCP Server (stdio transport for Cursor) ──
 const server = new Server(
