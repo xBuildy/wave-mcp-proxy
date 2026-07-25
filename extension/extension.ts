@@ -6,10 +6,26 @@ import * as http from 'http';
 import { URL } from 'url';
 
 export function activate(context: vscode.ExtensionContext) {
+    // ── Sidebar portal provider ──
     const provider = new WaveOSPortalViewProvider(context.extensionUri);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(WaveOSPortalViewProvider.viewType, provider)
     );
+
+    // ── "Open Wave OS" command — opens in Cursor Simple Browser tab ──
+    const openCmd = vscode.commands.registerCommand('wave-os.openDesktop', () => {
+        const uri = vscode.Uri.parse('https://oswave.io');
+        vscode.commands.executeCommand('simpleBrowser.show', uri.toString());
+    });
+    context.subscriptions.push(openCmd);
+
+    // ── Status bar item ──
+    const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+    statusBar.text = '$(radio-tower) Wave OS';
+    statusBar.tooltip = 'Open Wave OS in Cursor';
+    statusBar.command = 'wave-os.openDesktop';
+    statusBar.show();
+    context.subscriptions.push(statusBar);
 }
 
 export function deactivate() {}
@@ -37,6 +53,12 @@ class WaveOSPortalViewProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.onDidReceiveMessage(async (data) => {
             switch (data.type) {
+                case 'openInBrowser': {
+                    // Open in Simple Browser inside Cursor instead of external
+                    const uri = vscode.Uri.parse(data.url || 'https://oswave.io');
+                    vscode.commands.executeCommand('simpleBrowser.show', uri.toString());
+                    break;
+                }
                 case 'mcpCall': {
                     try {
                         const response = await this._callMcpBackend(data.payload);
@@ -77,16 +99,11 @@ class WaveOSPortalViewProvider implements vscode.WebviewViewProvider {
             return `<html><body>Error loading portal.html: ${err}</body></html>`;
         }
 
-        // Replace {{cspSource}}
         html = html.replace(/\{\{cspSource\}\}/g, webview.cspSource);
-
-        // Replace src="media/..." and href="media/..." with webview URIs
         html = html.replace(/(src|href)="media\/([^"]+)"/g, (match, attr, relativePath) => {
             const uri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', relativePath));
             return `${attr}="${uri}"`;
         });
-
-        // Also replace any general media/ references in scripts/links if needed
         html = html.replace(/\{\{mediaUri\}\}/g, webview.asWebviewUri(mediaPath).toString());
 
         return html;
@@ -94,7 +111,7 @@ class WaveOSPortalViewProvider implements vscode.WebviewViewProvider {
 
     private _callMcpBackend(payload: any): Promise<any> {
         return new Promise((resolve, reject) => {
-            const backendUrlStr = process.env.MCP_BACKEND_URL || 'https://oswave.io/functions/mcpRouter';
+            const backendUrlStr = process.env.MCP_BACKEND_URL || 'https://oswave.io/api/functions/mcpRouter';
             let url: URL;
             try {
                 url = new URL(backendUrlStr);
@@ -119,27 +136,17 @@ class WaveOSPortalViewProvider implements vscode.WebviewViewProvider {
 
             const req = requestLib.request(options, (res) => {
                 let data = '';
-                res.on('data', (chunk) => {
-                    data += chunk;
-                });
+                res.on('data', (chunk) => { data += chunk; });
                 res.on('end', () => {
                     if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-                        try {
-                            const json = JSON.parse(data);
-                            resolve(json);
-                        } catch (e) {
-                            reject(new Error(`Failed to parse response JSON: ${data}`));
-                        }
+                        try { resolve(JSON.parse(data)); }
+                        catch (e) { reject(new Error(`Failed to parse response: ${data}`)); }
                     } else {
-                        reject(new Error(`Request failed with status code ${res.statusCode}: ${data}`));
+                        reject(new Error(`Request failed ${res.statusCode}: ${data}`));
                     }
                 });
             });
-
-            req.on('error', (e) => {
-                reject(e);
-            });
-
+            req.on('error', reject);
             req.write(postData);
             req.end();
         });
