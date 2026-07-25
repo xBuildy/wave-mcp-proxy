@@ -193,7 +193,14 @@ function broadcastToPortals(activity) {
   }
 }
 
-// Start portal server
+// Start portal server — gracefully skip if port is already in use
+httpServer.on("error", (err) => {
+  if (err.code === "EADDRINUSE") {
+    console.error("[Wave Portal] Port " + PORTAL_PORT + " already in use — portal disabled, MCP still active");
+  } else {
+    console.error("[Wave Portal] Server error:", err.message);
+  }
+});
 httpServer.listen(PORTAL_PORT, "127.0.0.1", () => {
   console.error("[Wave Portal] Serving at http://localhost:" + PORTAL_PORT);
   console.error("[Wave Portal] WebSocket at ws://localhost:" + PORTAL_PORT + "/ws");
