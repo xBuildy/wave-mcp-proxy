@@ -1,14 +1,15 @@
 {
   "name": "wave-mcp-proxy",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Thin local proxy for Wave OS MCP — zero secrets, just forwards to Base44 backend",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "proxy-v3.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "postinstall": "echo '✅ Wave MCP Proxy installed. No build needed — just configure .cursor/mcp.json'"
+    "start": "node proxy-v3.js",
+    "postinstall": "echo '✅ Wave MCP Proxy v3 installed. Configure .cursor/mcp.json to use it.'"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "ws": "^8.16.0"
   }
 }
